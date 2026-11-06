@@ -1,0 +1,7 @@
+.DS_Store
+*.bak
+*.zip
+.env
+.env.*
+!.env.example
+test_logo.png
