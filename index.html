@@ -257,6 +257,52 @@ body.splash-open > :is(header,main,footer,.menu,.cookie,.toast){display:none}
  .co .fs:last-child{margin-bottom:0}
 }
 @media(max-width:380px){.splash .cta{font-size:14px;gap:14px}.card h2{font-size:16px}.card-body p{font-size:12px}.line{grid-template-columns:48px minmax(0,1fr) auto;gap:10px}.line .im{width:48px;height:48px}.line .nm{font-size:13px}}
+/* Product page: requirements 4–5 */
+.product-open{padding-bottom:0}
+.product-gallery .main{position:relative;background:#fff;height:calc(100svh - var(--hdr) - 130px);min-height:360px;max-height:900px;overflow:hidden;touch-action:pan-y}
+.product-slide{position:absolute;inset:0;display:grid;place-items:center;background:#fff}
+.product-slide img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:block;width:100%;height:100%;object-fit:contain}
+.product-slide img.cut{width:85%;height:85%;filter:none}
+.gallery-controls{position:absolute;left:20px;right:20px;bottom:20px;display:flex;justify-content:space-between;align-items:center;color:#101310}
+.gallery-controls .sq{background:#f2f3ef;color:#101310;border:1px solid #d9ddd7}
+.gallery-controls span{padding:10px 16px;background:#ffffffed;font-size:12px;letter-spacing:.12em}
+.product-thumbs{display:flex;gap:10px;margin-top:12px}
+.product-thumbs button{width:72px;height:72px;padding:4px;background:#fff;border:2px solid transparent;opacity:.65}
+.product-thumbs button[aria-pressed="true"]{border-color:var(--accent);opacity:1}
+.product-thumbs img{width:100%;height:100%;object-fit:contain}
+.product-details{max-width:760px;margin:48px auto 80px}
+.product-details .product-heading{padding:0}
+.product-details h1{font-size:clamp(36px,5vw,64px)}
+.product-details>.muted{margin:20px 0 28px}
+.bundle{border-top:1px solid var(--line);margin-top:44px;padding-top:32px}
+.bundle h2{font-size:clamp(28px,4vw,40px);margin-top:12px}
+.bundle>p{margin:14px 0 28px}
+.bundle-options{padding:0;border:0;margin:0 0 28px;display:grid;gap:10px}
+.bundle-options legend{margin-bottom:14px}
+.bundle-option{display:flex;align-items:center;gap:16px;border:1px solid var(--line);padding:20px;cursor:pointer;background:var(--bg-2)}
+.bundle-option:has(input:checked){border-color:var(--accent);background:#17251d}
+.bundle-option input{accent-color:var(--accent);width:20px;height:20px;margin:0}
+.bundle-option span{display:grid;gap:4px;flex:1}
+.bundle-option b{font-size:20px;letter-spacing:.04em}
+.bundle-option small{color:var(--fg-2);font-size:13px}
+.bundle-option strong{white-space:nowrap;font-size:18px}
+.bundle-model{display:flex;align-items:center;gap:16px;margin:12px 0}
+.bundle-model>img{width:68px;height:68px;object-fit:contain;background:#fff;padding:6px}
+.bundle-model>div{flex:1;min-width:0;display:grid;gap:6px}
+.bundle-model label{font-size:13px;color:var(--fg-2)}
+.bundle-model select{width:100%;height:48px;background:var(--bg-2);border:1px solid var(--line);padding:0 10px;font:inherit;color:var(--fg);font-size:16px}
+.bundle-summary{margin-top:28px;border-top:1px solid var(--line);padding-top:24px}
+#bundle-lines{display:grid;gap:12px;margin:16px 0 24px}
+#bundle-lines>div,.bundle-total{display:flex;justify-content:space-between;gap:16px}
+.bundle-total{padding-top:20px;border-top:1px solid var(--line);font-size:20px}
+.bundle-summary p{font-size:13px;margin:10px 0 24px}
+.bundle-checkout{width:100%}
+@media(max-width:640px){.product-gallery .main{height:calc(75svh - var(--hdr));min-height:320px}.product-slide img.cut{width:90%;height:85%}.gallery-controls{left:12px;right:12px;bottom:12px}.gallery-controls .sq{width:44px;height:44px}.product-details{margin-top:32px}.bundle-option{padding:16px;gap:12px}.bundle-option strong{font-size:16px}.bundle-model{gap:12px}.bundle-model>img{width:56px;height:56px}.bundle-total{font-size:18px}}
+.card-media{background:#fff;border-color:#e6e8e3}
+.card-number{color:#626860}
+.card-price small{display:block;font-size:11px;font-weight:400;color:var(--fg-2);margin-top:3px}
+.card-action{font-size:12px;text-decoration:underline;text-underline-offset:4px;margin-top:6px;color:var(--fg-2)}
+.card:hover .card-action{color:var(--fg)}
 </style>
 <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg?v=3">
 <link rel="icon" type="image/x-icon" href="favicon.ico?v=3">
@@ -344,49 +390,63 @@ const save=()=>{try{localStorage.setItem("balon_cart",JSON.stringify(cart))}catc
 $("#stack").innerHTML=P.map(p=>`
  <a class="card" href="#hat-${p.id}" aria-label="${p.name}, ${rub(p.price)}">
   <div class="card-media ${p.cls}"><span class="card-number">${p.n} / 04</span><img src="${IMG[p.img].cut}" alt="Шапка ${p.name}" width="520" height="520"></div>
-  <div class="card-body"><h2>${p.name}</h2><p>${p.color}</p><div class="card-price"><span>${rub(p.price)}</span>${arr}</div></div>
+  <div class="card-body"><h2>${p.name}</h2><p>${p.color}</p><div class="card-price"><span>${rub(p.price)}<small>за штуку</small></span>${arr}</div><span class="card-action">Выбрать модель</span></div>
  </a>`).join("");
 
 /* ---------- product page ---------- */
+let bundleDraft=null;
+try{const draft=JSON.parse(localStorage.getItem("balon_bundle")||"null");if(Array.isArray(draft)&&draft.length>=1&&draft.length<=3&&draft.every(id=>P.some(p=>p.id===id)))bundleDraft=draft}catch(e){}
+const saveBundle=()=>{try{localStorage.setItem("balon_bundle",JSON.stringify(bundleDraft))}catch(e){}};
 function product(id){
   const p=P.find(x=>x.id===id)||P[0], im=IMG[p.img];
+  if(!bundleDraft){const existing=cart.flatMap(c=>Array.from({length:Math.min(c.q,3)},()=>c.id)).filter(id=>P.some(x=>x.id===id));bundleDraft=existing.length&&existing.length<=3?existing:[p.id]}
   const g=[
-    {k:"studio",t:"Студия",html:`<div class="gs ${p.cls}"><img class="cut" src="${im.cut}" alt="${p.name}, студийное фото"></div>`},
-    {k:"photo",t:"Фото",html:`<div class="gs ph" style="background-image:url(${im.ph})" role="img" aria-label="${p.name}, фото"></div>`}
+    {src:im.cut,t:"Вид спереди",cut:true},
+    {src:im.ph,t:"Детали",cut:false}
   ];
   $("#product").innerHTML=`
    <div class="crumbs"><button data-go="shop" class="label">${arr}Каталог</button><span class="label muted">/ ${p.n} ${p.name}</span></div>
-   <div class="pgrid">
-    <div class="product-heading"><span class="label muted">BALON · Drop 01 · ${p.n}</span><h1>${p.name}</h1><div class="product-price"><b>${rub(p.price)}</b><span class="label muted">Тираж ограничен</span></div></div>
-    <div class="gal">
-     <div class="main" id="gmain">${g.map(x=>x.html).join("")}
-      <div class="gnav"><span class="cnt" id="gnum">01 / 02</span><div class="arrows"><button class="sq glass flip" id="gPrev" aria-label="Предыдущее фото">${arr}</button><button class="sq" id="gNext" aria-label="Следующее фото">${arr}</button></div></div>
+   <div class="product-gallery">
+     <div class="main" id="gmain" tabindex="0" role="region" aria-label="Фотографии ${p.name}">
+      ${g.map((x,i)=>`<div class="product-slide ${i?'':'on'}" ${i?'hidden':''}><img src="${x.src}" alt="${p.name} — ${x.t}" class="${x.cut?'cut':''}" draggable="false"></div>`).join("")}
+      <div class="gallery-controls"><button class="sq flip" id="gPrev" aria-label="Предыдущее фото">${arr}</button><span id="gnum" aria-live="polite">01 / 02</span><button class="sq" id="gNext" aria-label="Следующее фото">${arr}</button></div>
      </div>
-     <div class="thumbs">${g.map((x,i)=>`<button data-i="${i}" class="${i?'':'on'} ${x.k!=='photo'?p.cls:''}" style="${x.k==='photo'?`background-image:url(${im.ph})`:x.k==='studio'?`background-image:url(${im.cut}),var(--grad);background-size:56%,cover;background-repeat:no-repeat`:''}">${x.k==='model'?man:''}<span>${x.t}</span></button>`).join("")}</div>
-    </div>
-    <div class="info">
-     <p class="muted" style="margin:0;max-width:44ch">${p.desc}</p>
-     <div style="display:grid;gap:10px"><span class="label">Другие модели</span>
-      <div class="swatches">${P.map(x=>`<button class="${x.cls} ${x.id===p.id?'on':''}" data-go="hat-${x.id}" aria-label="${x.name}" style="background-image:url(${IMG[x.img].cut}),var(--grad);background-size:80%,cover;background-repeat:no-repeat;background-position:center"></button>`).join("")}</div></div>
-     <dl class="specs">
-      <div><dt>Цвет</dt><dd>${p.color}</dd></div>
-      <div><dt>Вязка</dt><dd>Жаккард, двухслойная</dd></div>
-      <div><dt>Размер</dt><dd>One size</dd></div>
-      <div><dt>Доставка</dt><dd>СДЭК, оплачивается покупателем · <a href="delivery.html">условия</a></dd></div>
-     </dl>
-     <div class="buy"><div class="qty"><button id="qm" aria-label="Меньше">−</button><span id="qv">1</span><button id="qp" aria-label="Больше">+</button></div>
-      <button class="btn" id="add">В корзину${arr}</button></div>
-    </div>
+     <div class="product-thumbs">${g.map((x,i)=>`<button data-slide="${i}" aria-label="${x.t}" aria-pressed="${i===0}"><img src="${x.src}" alt="" draggable="false"></button>`).join("")}</div>
+   </div>
+   <div class="product-details">
+    <div class="product-heading"><span class="label muted">BALON · Drop 01 · ${p.n}</span><h1>${p.name}</h1><div class="product-price"><b>${rub(p.price)}</b><span class="label muted">за одну шапку</span></div></div>
+    <p class="muted">${p.desc}</p>
+    <dl class="specs"><div><dt>Цвет</dt><dd>${p.color}</dd></div><div><dt>Вязка</dt><dd>Жаккард, двухслойная</dd></div><div><dt>Размер</dt><dd>One size</dd></div><div><dt>Доставка</dt><dd>СДЭК · <a href="delivery.html">условия доставки</a></dd></div></dl>
+    <section class="bundle" aria-labelledby="bundle-title">
+     <span class="label muted">Соберите свой набор</span><h2 id="bundle-title">Одна, две или три</h2><p class="muted">Можно выбрать одинаковые или разные модели.</p>
+     <fieldset class="bundle-options"><legend class="label">Количество шапок</legend>${[1,2,3].map(n=>`<label class="bundle-option"><input type="radio" name="bundle-count" value="${n}" ${bundleDraft.length===n?'checked':''}><span><b>${n} ${n===1?'HAT':'HATS'}</b><small>${n===1?'Одна шапка':n===2?'Две шапки':'Три шапки'}</small></span><strong data-bundle-price="${n}"></strong></label>`).join("")}</fieldset>
+     <div id="bundle-models"></div>
+     <div class="bundle-summary" aria-live="polite"><span class="label muted">Ваш заказ</span><div id="bundle-lines"></div><div class="bundle-total"><span>Итого за товары</span><b id="bundle-total"></b></div><p class="muted">Доставка рассчитывается при оформлении.</p></div>
+     <button class="btn bundle-checkout" id="bundleCheckout">Оформить заказ${arr}</button>
+    </section>
    </div>`;
-  let gi=0,q=1;
-  const gs=[...document.querySelectorAll("#gmain .gs")],th=[...document.querySelectorAll(".thumbs button")];
-  const show=i=>{gi=(i+gs.length)%gs.length;gs.forEach((s,j)=>s.classList.toggle("on",j===gi));th.forEach((t,j)=>t.classList.toggle("on",j===gi));$("#gnum").textContent=String(gi+1).padStart(2,"0")+" / "+String(gs.length).padStart(2,"0")};
-  show(0);
+  let gi=0;
+  const show=i=>{gi=(i+g.length)%g.length;document.querySelectorAll(".product-slide").forEach((el,j)=>{el.hidden=j!==gi;el.classList.toggle("on",j===gi)});document.querySelectorAll("[data-slide]").forEach((el,j)=>el.setAttribute("aria-pressed",String(j===gi)));$("#gnum").textContent=String(gi+1).padStart(2,"0")+" / "+String(g.length).padStart(2,"0")};
   $("#gPrev").onclick=()=>show(gi-1);$("#gNext").onclick=()=>show(gi+1);
-  th.forEach(t=>t.onclick=()=>show(+t.dataset.i));
-  $("#qm").onclick=()=>{q=Math.max(1,q-1);$("#qv").textContent=q};
-  $("#qp").onclick=()=>{q=Math.min(5,q+1);$("#qv").textContent=q};
-  $("#add").onclick=()=>{const c=cart.find(x=>x.id===p.id);c?c.q+=q:cart.push({id:p.id,q});save();toast(`${p.name} × ${q} в корзине`)};
+  document.querySelectorAll("[data-slide]").forEach(el=>el.onclick=()=>show(Number(el.dataset.slide)));
+  const gallery=$("#gmain");let start=null;
+  gallery.addEventListener("touchstart",e=>{const t=e.touches[0];start={x:t.clientX,y:t.clientY}},{passive:true});
+  gallery.addEventListener("touchend",e=>{if(!start)return;const t=e.changedTouches[0],dx=t.clientX-start.x,dy=t.clientY-start.y;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3)show(gi+(dx<0?1:-1));start=null},{passive:true});
+  gallery.addEventListener("touchcancel",()=>{start=null});
+  gallery.onkeydown=e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();show(gi+(e.key==="ArrowRight"?1:-1))}};
+  const totals=()=>{
+    const counts=new Map();bundleDraft.forEach(id=>counts.set(id,(counts.get(id)||0)+1));
+    $("#bundle-lines").innerHTML=[...counts].map(([id,q])=>{const x=P.find(p=>p.id===id);return `<div><span>${x.name} × ${q}</span><b>${rub(x.price*q)}</b></div>`}).join("");
+    $("#bundle-total").textContent=rub(bundleDraft.reduce((sum,id)=>sum+P.find(x=>x.id===id).price,0));
+    document.querySelectorAll("[data-bundle-price]").forEach(el=>{const n=Number(el.dataset.bundlePrice);el.textContent=rub(Array.from({length:n},(_,i)=>P.find(x=>x.id===(bundleDraft[i]||p.id)).price).reduce((a,b)=>a+b,0))});saveBundle();
+  };
+  const drawModels=()=>{
+    $("#bundle-models").innerHTML=bundleDraft.map((id,i)=>{const x=P.find(p=>p.id===id);return `<div class="bundle-model"><img id="bundle-image-${i}" src="${IMG[x.img].cut}" alt="${x.name}"><div><label for="bundle-model-${i}">Шапка ${i+1}</label><select id="bundle-model-${i}" data-model-index="${i}">${P.map(m=>`<option value="${m.id}" ${m.id===id?'selected':''}>${m.name} — ${rub(m.price)}</option>`).join("")}</select></div></div>`}).join("");
+    document.querySelectorAll("[data-model-index]").forEach(el=>el.onchange=()=>{bundleDraft[Number(el.dataset.modelIndex)]=el.value;const x=P.find(p=>p.id===el.value),image=$("#bundle-image-"+el.dataset.modelIndex);image.src=IMG[x.img].cut;image.alt=x.name;totals()});totals();
+  };
+  document.querySelectorAll('[name="bundle-count"]').forEach(el=>el.onchange=()=>{bundleDraft=Array.from({length:Number(el.value)},(_,i)=>bundleDraft[i]||p.id);drawModels()});
+  $("#bundleCheckout").onclick=()=>{const counts=new Map();bundleDraft.forEach(id=>counts.set(id,(counts.get(id)||0)+1));cart=[...counts].map(([id,q])=>({id,q}));save();saveBundle();go("cart")};
+  drawModels();
 }
 
 /* ---------- cart & checkout ---------- */
@@ -451,7 +511,7 @@ function cartView(){
     </form>
     <aside class="sum order-summary">
      <div class="hd"><span class="label">Ваш заказ</span><span class="label muted">${items.reduce((a,x)=>a+x.q,0)} шт.</span></div>
-     ${items.length?items.map(x=>`<div class="line"><div class="im ${x.cls}" style="background-image:url(${IMG[x.img].cut}),var(--grad);background-size:84%,cover;background-repeat:no-repeat;background-position:center"></div><div style="min-width:0"><div class="nm">${x.name}</div><div class="muted" style="font-size:13px">${x.color}</div><div class="cart-qty"><button data-qty="${x.id}" data-delta="-1" aria-label="Уменьшить количество ${x.name}" ${x.q<=1?'disabled':''}>−</button><span>${x.q}</span><button data-qty="${x.id}" data-delta="1" aria-label="Увеличить количество ${x.name}">+</button></div><button class="rm" data-rm="${x.id}">Удалить</button></div><b style="white-space:nowrap">${rub(x.price*x.q)}</b></div>`).join(""):
+     ${items.length?items.map(x=>`<div class="line"><div class="im ${x.cls}" style="background-image:url(${IMG[x.img].cut}),var(--grad);background-size:84%,cover;background-repeat:no-repeat;background-position:center"></div><div style="min-width:0"><div class="nm">${x.name}</div><div class="muted" style="font-size:13px">${x.color}</div><div class="cart-qty"><button data-qty="${x.id}" data-delta="-1" aria-label="Уменьшить количество ${x.name}" ${x.q<=1?'disabled':''}>−</button><span>${x.q}</span><button data-qty="${x.id}" data-delta="1" aria-label="Увеличить количество ${x.name}" ${items.reduce((a,x)=>a+x.q,0)>=3?'disabled':''}>+</button></div><button class="rm" data-rm="${x.id}">Удалить</button></div><b style="white-space:nowrap">${rub(x.price*x.q)}</b></div>`).join(""):
       `<div class="empty"><span class="muted">В корзине пока пусто</span><button class="btn" data-go="shop">В каталог${arr}</button></div>`}
     </aside>
     <aside class="sum payment-summary">
@@ -468,8 +528,8 @@ function cartView(){
   document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{mode=b.dataset.m;cartView()});
   $("#city").onchange=e=>{form.city=e.target.value;form.pvz=null;cartView()};
   const pick=$("#pick"); if(pick) pick.onclick=()=>pvzPicker();
-  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{cart=cart.filter(c=>c.id!==b.dataset.rm);save();cartView()});
-  document.querySelectorAll("[data-qty]").forEach(b=>b.onclick=()=>{const item=cart.find(c=>c.id===b.dataset.qty);item.q=Math.max(1,item.q+Number(b.dataset.delta));save();cartView()});
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{cart=cart.filter(c=>c.id!==b.dataset.rm);save();bundleDraft=cart.flatMap(c=>Array(c.q).fill(c.id));if(!bundleDraft.length)bundleDraft=null;saveBundle();cartView()});
+  document.querySelectorAll("[data-qty]").forEach(b=>b.onclick=()=>{const item=cart.find(c=>c.id===b.dataset.qty);if(Number(b.dataset.delta)>0&&cart.reduce((a,c)=>a+c.q,0)>=3)return;item.q=Math.max(1,item.q+Number(b.dataset.delta));save();bundleDraft=cart.flatMap(c=>Array(c.q).fill(c.id));saveBundle();cartView()});
   $("#f").onsubmit=e=>{e.preventDefault();if(!$("#pay").disabled)$("#pay").click()};
   $("#ok").onchange=e=>{form.ok=e.target.checked;$("#pay").disabled=!(items.length&&form.ok)};
   $("#news").onchange=e=>{form.news=e.target.checked};
